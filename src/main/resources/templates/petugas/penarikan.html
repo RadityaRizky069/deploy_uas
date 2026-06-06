@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Penarikan Saldo</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Penarikan Saldo Bank Sampah</h4>
+
+        <div th:if="${!#strings.isEmpty(success)}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><span th:text="${success}">Sukses</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${!#strings.isEmpty(error)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}">Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Permintaan Penarikan Menunggu -->
+        <div class="card mb-4">
+            <div class="card-header bg-soft-warning d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-clock me-2"></i>Permintaan Penarikan Menunggu</span>
+                <span class="badge bg-warning text-dark" th:text="${#lists.size(penarikanList)} + ' menunggu'">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Jumlah</th>
+                                <th>Catatan</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p, stat : ${penarikanList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${p.warga.nama}">Budi</td>
+                                <td class="fw-semibold" th:text="'Rp ' + ${#numbers.formatDecimal(p.jumlah, 0, 0)}">Rp 50.000</td>
+                                <td class="small" th:text="${p.catatan != null ? p.catatan : '-'}">Catatan</td>
+                                <td class="small" th:text="${#temporals.format(p.createdAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                                <td>
+                                    <form th:action="@{/petugas/penarikan/{id}/setujui(id=${p.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-success mb-1 w-100 btn-confirm-action"
+                                                data-confirm="Setujui penarikan ini? Saldo warga akan dipotong.">
+                                            <i class="fas fa-check me-1"></i>Setujui
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/petugas/penarikan/{id}/tolak(id=${p.id})}" method="post" style="display:inline;">
+                                        <input type="text" name="catatan" class="form-control form-control-sm mb-1"
+                                               placeholder="Alasan penolakan" style="width:130px;">
+                                        <button type="submit" class="btn btn-sm btn-danger w-100 btn-confirm-action"
+                                                data-confirm="Tolak penarikan ini?">
+                                            <i class="fas fa-times me-1"></i>Tolak
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(penarikanList)}">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                                    Tidak ada permintaan penarikan
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Penarikan Disetujui -->
+        <div class="card mb-4">
+            <div class="card-header bg-soft-success d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-check-circle me-2"></i>Riwayat Penarikan Disetujui</span>
+                <span class="badge bg-success" th:text="${#lists.size(riwayatPenarikan)}">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Jumlah</th>
+                                <th>Petugas</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p, stat : ${riwayatPenarikan}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${p.warga.nama}">Budi</td>
+                                <td class="fw-semibold text-success" th:text="'Rp ' + ${#numbers.formatDecimal(p.jumlah, 0, 0)}">Rp 50.000</td>
+                                <td th:text="${p.petugas != null ? p.petugas.nama : '-'}">Petugas</td>
+                                <td class="small" th:text="${#temporals.format(p.updatedAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(riwayatPenarikan)}">
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Belum ada penarikan yang disetujui
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Penarikan Ditolak -->
+        <div class="card">
+            <div class="card-header bg-soft-danger d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-times-circle me-2"></i>Riwayat Penarikan Ditolak</span>
+                <span class="badge bg-danger" th:text="${#lists.size(riwayatPenarikanDitolak)}">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Jumlah</th>
+                                <th>Catatan</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p, stat : ${riwayatPenarikanDitolak}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${p.warga.nama}">Budi</td>
+                                <td class="fw-semibold text-danger" th:text="'Rp ' + ${#numbers.formatDecimal(p.jumlah, 0, 0)}">Rp 50.000</td>
+                                <td class="small" th:text="${p.catatan != null ? p.catatan : '-'}">Alasan</td>
+                                <td class="small" th:text="${#temporals.format(p.updatedAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(riwayatPenarikanDitolak)}">
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Belum ada penarikan yang ditolak
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

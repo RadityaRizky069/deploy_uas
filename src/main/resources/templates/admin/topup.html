@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Topup Saldo Bank Sampah</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Topup Saldo Bank Sampah</h4>
+
+        <div class="alert alert-info fade-in mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            Halaman ini menampilkan permintaan topup saldo dari warga. Setujui untuk menambahkan saldo ke akun warga.
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <i class="fas fa-clock me-2"></i>Permintaan Topup Menunggu
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Warga</th>
+                                <th>Username</th>
+                                <th>Jumlah</th>
+                                <th>Catatan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${topupList}">
+                                <td class="small" th:text="${#temporals.format(t.createdAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                                <td th:text="${t.warga.nama}">Nama Warga</td>
+                                <td class="small text-muted" th:text="'@' + ${t.warga.username}">@username</td>
+                                <td class="fw-bold text-success" th:text="'Rp ' + ${#numbers.formatDecimal(t.jumlah, 0, 0)}">Rp 50.000</td>
+                                <td class="small" th:text="${t.catatan != null ? t.catatan : '-'}">Catatan</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <form th:action="@{/admin/topup/setujui/{id}(id=${t.id})}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Setujui
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                th:attr="data-bs-target='#tolakModal' + ${t.id}">
+                                            <i class="fas fa-times"></i> Tolak
+                                        </button>
+                                    </div>
+
+                                    <div class="modal fade" th:id="'tolakModal' + ${t.id}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm">
+                                            <div class="modal-content">
+                                                <form th:action="@{/admin/topup/tolak/{id}(id=${t.id})}" method="post">
+                                                    <div class="modal-header">
+                                                        <h6 class="modal-title">Tolak Topup</h6>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p class="small mb-2" th:text="'Yakin tolak topup Rp ' + ${#numbers.formatDecimal(t.jumlah, 0, 0)} + ' dari ' + ${t.warga.nama} + '?'">Yakin?</p>
+                                                        <textarea class="form-control" name="catatan" rows="2" placeholder="Alasan penolakan (opsional)"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-danger btn-sm">Ya, Tolak</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(topupList)}">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                    Tidak ada permintaan topup menunggu
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-check-circle me-2"></i>Riwayat Disetujui
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height:300px; overflow-y:auto;">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Warga</th>
+                                        <th>Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="t : ${riwayatDisetujui}">
+                                        <td class="small" th:text="${#temporals.format(t.createdAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                                        <td th:text="${t.warga.nama}">Nama</td>
+                                        <td class="fw-bold text-success" th:text="'Rp ' + ${#numbers.formatDecimal(t.jumlah, 0, 0)}">Rp 50.000</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(riwayatDisetujui)}">
+                                        <td colspan="3" class="text-center text-muted py-3">Belum ada</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <i class="fas fa-times-circle me-2"></i>Riwayat Ditolak
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height:300px; overflow-y:auto;">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Warga</th>
+                                        <th>Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="t : ${riwayatDitolak}">
+                                        <td class="small" th:text="${#temporals.format(t.createdAt, 'dd-MM-yyyy HH:mm')}">01-01-2024</td>
+                                        <td th:text="${t.warga.nama}">Nama</td>
+                                        <td class="fw-bold text-danger" th:text="'Rp ' + ${#numbers.formatDecimal(t.jumlah, 0, 0)}">Rp 50.000</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(riwayatDitolak)}">
+                                        <td colspan="3" class="text-center text-muted py-3">Belum ada</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

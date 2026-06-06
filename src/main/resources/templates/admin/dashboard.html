@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Dashboard Admin</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Dashboard Admin</h4>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card stat-card-green fade-in">
+                    <div>
+                        <div class="stat-card-number" th:text="${totalWarga}">0</div>
+                        <div class="stat-card-label">Total Warga</div>
+                    </div>
+                    <i class="fas fa-users stat-card-icon"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-card-blue fade-in">
+                    <div>
+                        <div class="stat-card-number" th:text="${totalPetugas}">0</div>
+                        <div class="stat-card-label">Total Petugas</div>
+                    </div>
+                    <i class="fas fa-user-tie stat-card-icon"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-card-orange fade-in">
+                    <div>
+                        <div class="stat-card-number" th:text="${setoranHariIni}">0</div>
+                        <div class="stat-card-label">Setoran Hari Ini</div>
+                    </div>
+                    <i class="fas fa-box stat-card-icon"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-card-green fade-in">
+                    <div>
+                        <div class="stat-card-number" th:text="${totalSampah}">0</div>
+                        <div class="stat-card-label">Total Sampah (kg)</div>
+                    </div>
+                    <i class="fas fa-recycle stat-card-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="card-header">Grafik Setoran per Bulan</div>
+                    <div class="card-body d-flex align-items-center" style="max-height:330px;">
+                        <canvas id="chartSetoranBulanan" class="w-100"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Sampah per Kategori</span>
+                            <a th:href="@{/admin/kategori}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-cog me-1"></i>Kelola Kategori
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 d-flex flex-column" style="overflow-y:auto;max-height:330px;">
+                        <div th:if="${#lists.isEmpty(kategoriLabels)}" class="text-center text-muted py-4">
+                            <i class="fas fa-tag fa-3x mb-3"></i>
+                            <p class="mb-0">Belum ada data sampah diverifikasi</p>
+                        </div>
+                        <ul th:if="${!#lists.isEmpty(kategoriLabels)}" class="list-group list-group-flush">
+                            <li th:each="k, stat : ${kategoriLabels}"
+                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <span>
+                                    <span class="d-inline-block rounded-circle me-2"
+                                          th:style="'width:12px;height:12px;background:' + ${warnaKategori[stat.index]}"
+                                          style="width:12px;height:12px;background:#2ecc71;"></span>
+                                    <span th:text="${k}">Plastik</span>
+                                </span>
+                                <strong class="text-success" th:text="${#numbers.formatDecimal(kategoriValues[stat.index], 0, 2)} + ' kg'">1.000 kg</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">5 Setoran Terakhir</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Kategori</th>
+                                <th>Berat (kg)</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${recentSetoran}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${s.warga.nama}">Budi</td>
+                                <td th:text="${s.kategori != null ? s.kategori.nama : '-'}">ORGANIK</td>
+                                <td th:text="${s.beratKg}">5.0</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.status?.name() == 'DITERIMA'} ? 'bg-success' : (${s.status?.name() == 'MENUNGGU'} ? 'bg-warning' : 'bg-danger')"
+                                          th:text="${s.status?.name()}">DITERIMA</span>
+                                </td>
+                                <td th:text="${#temporals.format(s.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                            </tr>
+                            <tr th:if="${recentSetoran == null or #lists.isEmpty(recentSetoran)}">
+                                <td colspan="6" class="text-center text-muted py-4">Belum ada data setoran</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.addEventListener('load', function() {
+
+            const labelsSetoran = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const dataSetoran = /*[[${bulanData}]]*/ [0,0,0,0,0,0,0,0,0,0,0,0];
+            var ctxBulanan = document.getElementById('chartSetoranBulanan');
+            if (ctxBulanan) {
+                var adaData = dataSetoran.some(function(v) { return v > 0; });
+                if (adaData) {
+                    new Chart(ctxBulanan, {
+                        type: 'line',
+                        data: {
+                            labels: labelsSetoran,
+                            datasets: [{
+                                label: 'Berat (KG)',
+                                data: dataSetoran,
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                borderColor: '#2ecc71',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#2ecc71',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.3,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Berat (KG)' }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    ctxBulanan.style.display = 'none';
+                    ctxBulanan.insertAdjacentHTML('afterend',
+                        '<div class="text-center text-muted py-4">' +
+                        '<i class="fas fa-chart-line fa-3x mb-3"></i>' +
+                        '<p class="mb-0">Belum ada data setoran tahun ini</p></div>');
+                }
+            }
+
+        });
+        /*]]>*/
+    </script>
+    </div>
+</body>
+</html>

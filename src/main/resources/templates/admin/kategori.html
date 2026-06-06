@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Kelola Kategori Sampah</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Kelola Kategori Sampah</h4>
+
+        <div th:if="${param.suksesTambah}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>Kategori baru berhasil ditambahkan!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${!#strings.isEmpty(success)}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><span th:text="${success}">Sukses</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${!#strings.isEmpty(error)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}">Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle me-2"></i>Tambah Kategori Baru
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/kategori/simpan}" method="post">
+                            <div class="mb-3">
+                                <label for="namaKategori" class="form-label">Nama Kategori <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="namaKategori" name="namaKategori"
+                                       placeholder="Contoh: Plastik, Kertas, Organik" required>
+                                <div class="form-text">Masukkan nama jenis sampah baru.</div>
+                            </div>
+                            <div class="mb-3" id="hargaBiasaGroup">
+                                <label for="hargaPerKg" class="form-label">Harga per Kg (Rp) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="hargaPerKg" name="hargaPerKg"
+                                       step="100" min="0" required
+                                       placeholder="Contoh: 5000">
+                                <div class="form-text">Biaya yang dibayarkan warga per kilogram untuk pembuangan sampah ini.</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="isDaurUlang" name="isDaurUlang" value="true">
+                                    <label class="form-check-label" for="isDaurUlang">
+                                        <i class="fas fa-recycle text-success me-1"></i>Kategori Daur Ulang (Bank Sampah)
+                                    </label>
+                                </div>
+                                <div class="form-text">Centang jika sampah ini bisa didaur ulang. Warga akan <strong>dibayar</strong> per kg.</div>
+                            </div>
+                            <div class="mb-3" id="hargaDaurUlangGroup" style="display:none;">
+                                <label for="hargaDaurUlang" class="form-label">Harga Daur Ulang per Kg (Rp) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="hargaDaurUlang" name="hargaDaurUlang"
+                                       step="100" min="0" required disabled
+                                       placeholder="Contoh: 3000">
+                                <div class="form-text">Harga yang <strong>dibayarkan ke warga</strong> per kilogram untuk setoran daur ulang.</div>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Simpan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list me-2"></i>Daftar Kategori
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Kategori</th>
+                                        <th>Daur Ulang</th>
+                                        <th>Harga</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="k, stat : ${listKategori}">
+                                        <td th:text="${stat.count}">1</td>
+                                        <td th:text="${k.nama}">Organik</td>
+                                        <td>
+                                            <span th:if="${k.isDaurUlang == true}" class="badge bg-success">
+                                                <i class="fas fa-recycle me-1"></i>Daur Ulang
+                                            </span>
+                                            <span th:unless="${k.isDaurUlang == true}" class="badge bg-secondary">Buang</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${k.isDaurUlang == true and k.hargaDaurUlang != null}" class="badge bg-info">
+                                                Rp <span th:text="${k.hargaDaurUlang}">3.000</span>/kg <span class="fw-normal">(dibayar ke warga)</span>
+                                            </span>
+                                            <span th:if="${k.isDaurUlang != true and k.hargaPerKg != null}" class="badge bg-success">
+                                                Rp <span th:text="${k.hargaPerKg}">5.000</span>/kg <span class="fw-normal">(biaya buang)</span>
+                                            </span>
+                                            <span class="text-muted" th:if="${k.hargaPerKg == null and (k.isDaurUlang != true or k.hargaDaurUlang == null)}">-</span>
+                                        </td>
+                                        <td style="white-space:nowrap;">
+                                            <a th:href="@{/admin/kategori/edit/{id}(id=${k.id})}" class="btn btn-sm btn-warning me-1" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{/admin/kategori/hapus/{id}(id=${k.id})}" class="btn btn-sm btn-danger btn-delete-confirm"
+                                               title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(listKategori)}">
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="fas fa-inbox me-2"></i>Belum ada kategori sampah
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('isDaurUlang').addEventListener('change', function() {
+            var daur = this.checked;
+            document.getElementById('hargaDaurUlangGroup').style.display = daur ? 'block' : 'none';
+            document.getElementById('hargaBiasaGroup').style.display = daur ? 'none' : 'block';
+            document.getElementById('hargaPerKg').required = !daur;
+            document.getElementById('hargaDaurUlang').required = daur;
+            document.getElementById('hargaPerKg').disabled = daur;
+            document.getElementById('hargaDaurUlang').disabled = !daur;
+        });
+    </script>
+</body>
+</html>

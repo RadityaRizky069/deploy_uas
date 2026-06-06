@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Trashformer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="wrapper">
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-trash-alt"></i>
+                <span>Trashformer</span>
+            </div>
+            <ul class="sidebar-nav">
+                <th:block th:if="${#authentication != null && #authentication.authorities.iterator().next().getAuthority() == 'ROLE_ADMIN'}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/users}"><i class="fas fa-users-cog"></i> Kelola User</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/kategori}"><i class="fas fa-tag"></i> Kategori Sampah</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/setoran}"><i class="fas fa-boxes"></i> Data Setoran</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/setoran-uang}"><i class="fas fa-money-bill-wave"></i> Setoran Uang</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/topup}"><i class="fas fa-plus-circle"></i> Topup Saldo</a></li>
+                </th:block>
+                <th:block th:if="${#authentication != null && #authentication.authorities.iterator().next().getAuthority() == 'ROLE_PETUGAS'}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/petugas/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/petugas/warga}"><i class="fas fa-users"></i> Data Warga</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/petugas/setoran}"><i class="fas fa-plus-circle"></i> Input Setoran</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/petugas/verifikasi}"><i class="fas fa-check-circle"></i> Verifikasi</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/petugas/penarikan}"><i class="fas fa-hand-holding-usd"></i> Penarikan Saldo</a></li>
+                </th:block>
+                <th:block th:if="${#authentication != null && #authentication.authorities.iterator().next().getAuthority() == 'ROLE_WARGA'}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/warga/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/warga/laporan}"><i class="fas fa-plus-circle"></i> Buat Laporan</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/warga/profil}"><i class="fas fa-user"></i> Profil Saya</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/warga/riwayat}"><i class="fas fa-history"></i> Riwayat Sampah</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/warga/bank-saldo}"><i class="fas fa-piggy-bank"></i> Bank Sampah</a></li>
+                </th:block>
+            </ul>
+            <div class="sidebar-footer">
+                <a class="btn-logout" href="#" onclick="document.getElementById('logoutForm').submit(); return false;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main id="main-content" class="main-content">
+            <nav class="topbar">
+                <button id="sidebarToggle" class="btn-toggle" type="button">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-right">
+                    <span class="user-name" th:text="${nama}">User</span>
+                    <span class="badge role-badge"
+                          th:classappend="${role == 'ADMIN'} ? 'bg-danger' : (${role == 'PETUGAS'} ? 'bg-primary' : 'bg-success')"
+                          th:text="${role}">Role</span>
+                </div>
+            </nav>
+
+            <div class="container-fluid content-wrapper">
+                <div layout:fragment="content"></div>
+            </div>
+        </main>
+    </div>
+
+    <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none;"></form>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;">
+        <div id="toastNotif" class="toast align-items-center border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMsg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-question-circle text-warning mb-3" style="font-size:3rem;"></i>
+                    <p class="fw-semibold mb-0" id="confirmMsg">Apakah Anda yakin?</p>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="confirmOk">Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title th:text="${user.id != null} ? 'Edit User' : 'Tambah User'">Form User</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title" th:text="${user.id != null} ? 'Edit User' : 'Tambah User Baru'">Form User</h4>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{${user.id != null} ? '/admin/users/update' : '/admin/users/simpan'}" method="post">
+                    <input type="hidden" name="id" th:value="${user.id}" th:if="${user.id != null}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nama" class="form-label">Nama Lengkap</label>
+                            <input type="text" id="nama" name="nama" class="form-control" th:value="${user.nama}" required minlength="3">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" name="username" class="form-control" th:value="${user.username}" required minlength="3">
+                        </div>
+                        <div class="col-md-6" th:if="${user.id == null}">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Minimal 6 karakter" required minlength="6">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role</label>
+                            <select id="role" name="role" class="form-select" required>
+                                <option value="">-- Pilih Role --</option>
+                                <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.name()}" th:selected="${user.role != null and user.role.name() == r.name()}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <a th:href="@{/admin/users}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

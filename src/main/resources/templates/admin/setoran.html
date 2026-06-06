@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Data Setoran Sampah</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Data Setoran Sampah</h4>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="form-control table-search" placeholder="Cari setoran...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filterKategori">
+                            <option value="">Semua Kategori</option>
+                            <option value="ORGANIK">Organik</option>
+                            <option value="ANORGANIK">Anorganik</option>
+                            <option value="B3">B3</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filterStatus">
+                            <option value="">Semua Status</option>
+                            <option value="MENUNGGU">Menunggu</option>
+                            <option value="DITERIMA">Diterima</option>
+                            <option value="DITOLAK">Ditolak</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filterPembayaran">
+                            <option value="">Semua Bayar</option>
+                            <option value="MENUNGGU_VERIFIKASI">Menunggu Verifikasi</option>
+                            <option value="DISETUJUI">Disetujui</option>
+                            <option value="DITOLAK">Ditolak</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="filterPenjemputan">
+                            <option value="">Semua Jemput</option>
+                            <option value="DIJADWALKAN">Dijadwalkan</option>
+                            <option value="SEDANG_DIJEMPUT">Sedang Dijemput</option>
+                            <option value="SELESAI">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="setoranTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Kategori</th>
+                                <th>Berat (kg)</th>
+                                <th>Total Harga</th>
+                                <th>Status</th>
+                                <th>Status Bayar</th>
+                                <th>Status Jemput</th>
+                                <th>Petugas</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${setoranList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${s.warga.nama}">Budi</td>
+                                <td th:text="${s.kategori != null ? s.kategori.nama : '-'}">ORGANIK</td>
+                                <td th:text="${s.beratKg}">5.0</td>
+                                <td th:text="${s.totalHarga}">Rp 10.000</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.status?.name() == 'DITERIMA'} ? 'bg-success' : (${s.status?.name() == 'MENUNGGU'} ? 'bg-warning' : 'bg-danger')"
+                                          th:text="${s.status?.name()}">DITERIMA</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.statusPembayaran?.name() == 'DISETUJUI'} ? 'bg-success' : (${s.statusPembayaran?.name() == 'MENUNGGU_VERIFIKASI'} ? 'bg-warning' : 'bg-danger')"
+                                          th:text="${s.statusPembayaran?.name()}">DISETUJUI</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.statusPenjemputan?.name() == 'SELESAI'} ? 'bg-success' : (${s.statusPenjemputan?.name() == 'SEDANG_DIJEMPUT'} ? 'bg-info' : 'bg-secondary')"
+                                          th:text="${s.statusPenjemputan?.name()}">DIJADWALKAN</span>
+                                </td>
+                                <td th:text="${s.petugas != null ? s.petugas.nama : '-'}">Petugas</td>
+                                <td th:text="${#temporals.format(s.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                            </tr>
+                            <tr th:if="${setoranList == null or #lists.isEmpty(setoranList)}">
+                                <td colspan="10" class="text-center text-muted py-4">Belum ada data setoran</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Kelola User</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="page-title mb-0">Kelola User</h4>
+            <a th:href="@{/admin/users/tambah}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Tambah User Baru
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="form-control table-search" placeholder="Cari user...">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="btn-group filter-btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary filter-tab active" data-filter="all" data-target="#userTable">Semua</button>
+                            <button type="button" class="btn btn-outline-secondary filter-tab" data-filter="WARGA" data-target="#userTable">Warga</button>
+                            <button type="button" class="btn btn-outline-secondary filter-tab" data-filter="PETUGAS" data-target="#userTable">Petugas</button>
+                            <button type="button" class="btn btn-outline-secondary filter-tab" data-filter="ADMIN" data-target="#userTable">Admin</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="userTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u, stat : ${users}" th:attr="data-role=${u.role}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${u.nama}">Budi</td>
+                                <td th:text="${u.username}">budi</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${u.role.name() == 'ADMIN'} ? 'bg-danger' : (${u.role.name() == 'PETUGAS'} ? 'bg-primary' : 'bg-success')"
+                                          th:text="${u.role.name()}">WARGA</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success" th:if="${u.active == null or u.active}" th:text="'Aktif'">Aktif</span>
+                                    <span class="badge bg-danger" th:unless="${u.active == null or u.active}" th:text="'Nonaktif'">Nonaktif</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/users/edit/{id}(id=${u.id})}" class="btn btn-sm btn-outline-primary action-btn" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/admin/users/reset-password/{id}(id=${u.id})}" class="btn btn-sm btn-outline-warning action-btn btn-confirm-action" data-confirm="Reset password user ini ke 123456?" title="Reset Password">
+                                        <i class="fas fa-key"></i>
+                                    </a>
+                                    <a th:href="@{/admin/users/toggle/{id}(id=${u.id})}" class="btn btn-sm btn-outline-info action-btn btn-confirm-action"
+                                       th:attr="data-confirm=${u.active == null or u.active} ? 'Nonaktifkan user ini?' : 'Aktifkan user ini?'"
+                                       th:title="${u.active == null or u.active} ? 'Nonaktifkan' : 'Aktifkan'">
+                                        <i class="fas" th:classappend="${u.active == null or u.active} ? 'fa-ban' : 'fa-check'"></i>
+                                    </a>
+                                    <a th:href="@{/admin/users/hapus/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger action-btn btn-delete-confirm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${users == null or #lists.isEmpty(users)}">
+                                <td colspan="6" class="text-center text-muted py-4">Belum ada user</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

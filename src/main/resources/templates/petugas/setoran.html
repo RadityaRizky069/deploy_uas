@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Input Setoran Sampah</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Input Setoran Sampah</h4>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/petugas/setoran/simpan}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="warga" class="form-label">Warga</label>
+                            <select id="warga" name="wargaId" class="form-select" required>
+                                <option value="">-- Pilih Warga --</option>
+                                <option th:each="w : ${wargaList}" th:value="${w.id}" th:text="${w.nama + ' (' + w.username + ')'}">Budi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Jenis Sampah <span class="text-danger">*</span></label>
+                            <div id="itemsContainer">
+                                <div class="item-row row g-2 mb-2 align-items-center">
+                                    <div class="col-md-5">
+                                        <select name="kategoriIds" class="form-select" required>
+                                            <option value="">-- Pilih Kategori --</option>
+                                            <option th:each="k : ${kategoriList}" th:value="${k.id}" th:text="${k.nama}">ORGANIK</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" name="beratKgs" class="form-control" step="0.1" min="0.1" placeholder="Berat (kg)" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="hapusBaris(this)">
+                                            <i class="fas fa-trash me-1"></i>Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm mb-3" onclick="tambahBaris()">
+                                <i class="fas fa-plus me-1"></i>Tambah Jenis Sampah
+                            </button>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="catatan" class="form-label">Catatan</label>
+                            <textarea id="catatan" name="catatan" class="form-control" placeholder="Catatan tambahan (opsional)"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <a th:href="@{/petugas/dashboard}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Simpan Setoran
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <script>
+        function tambahBaris() {
+            var container = document.getElementById('itemsContainer');
+            var firstRow = container.querySelector('.item-row');
+            var newRow = firstRow.cloneNode(true);
+            newRow.querySelectorAll('select, input').forEach(function(el) { el.value = ''; });
+            container.appendChild(newRow);
+        }
+
+        function hapusBaris(btn) {
+            var container = document.getElementById('itemsContainer');
+            var rows = container.querySelectorAll('.item-row');
+            if (rows.length <= 1) return;
+            btn.closest('.item-row').remove();
+        }
+    </script>
+    </div>
+</body>
+</html>

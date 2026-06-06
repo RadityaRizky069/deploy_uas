@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Verifikasi Setoran</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Verifikasi Setoran</h4>
+
+        <!-- Modal Preview Bukti (Full Size) -->
+        <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-image me-2"></i>Bukti Pembayaran</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center bg-dark p-3" style="border-radius:0 0 5px 5px;">
+                        <img id="previewImage" src="" alt="Bukti Pembayaran" class="img-fluid"
+                             style="max-height: 80vh; object-fit: contain; cursor: zoom-in;"
+                             onclick="window.open(this.src, '_blank')">
+                        <p class="text-light mt-2 mb-0 small">
+                            <i class="fas fa-search-plus me-1"></i>Klik gambar untuk membuka di tab baru
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL 1: Setoran Daur Ulang Menunggu Verifikasi -->
+        <div class="card mb-4">
+            <div class="card-header bg-soft-success d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-recycle me-2"></i>Setoran Daur Ulang Menunggu Verifikasi</span>
+                <span class="badge bg-success" th:text="${#lists.size(daurUlangList)} + ' menunggu'">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Kategori</th>
+                                <th>Berat (kg)</th>
+                                <th>Nilai Daur Ulang</th>
+                                <th>Alamat Jemput</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${daurUlangList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${s.warga.nama}">Budi</td>
+                                <td><span th:text="${s.kategori != null ? s.kategori.nama : '-'}">Plastik</span> <span class="badge bg-success">Daur Ulang</span></td>
+                                <td th:text="${s.beratKg}">5.0</td>
+                                <td class="fw-semibold text-success" th:text="'Rp ' + ${s.totalHarga}">Rp 10.000</td>
+                                <td style="max-width:150px; white-space:pre-wrap; font-size:0.85rem;"
+                                    th:text="${s.alamatJemput != null ? s.alamatJemput : '-'}">Alamat</td>
+                                <td th:text="${#temporals.format(s.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                                <td>
+                                    <form th:action="@{/petugas/verifikasi/daur-ulang/{id}(id=${s.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-success mb-1 w-100 btn-confirm-action"
+                                                data-confirm="Terima setoran daur ulang ini? Saldo warga akan dikredit.">
+                                            <i class="fas fa-check me-1"></i>Terima & Kredit
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/petugas/verifikasi/{id}(id=${s.id})}" method="post" style="display:inline;">
+                                        <input type="hidden" name="status" value="DITOLAK">
+                                        <button type="submit" class="btn btn-sm btn-danger w-100 btn-confirm-action"
+                                                data-confirm="Tolak setoran daur ulang ini?">
+                                            <i class="fas fa-times me-1"></i>Tolak
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${daurUlangList == null or #lists.isEmpty(daurUlangList)}">
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                                    Tidak ada setoran daur ulang yang menunggu
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL 2: Menunggu Verifikasi Pembayaran -->
+        <div class="card mb-4">
+            <div class="card-header bg-soft-warning d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-clock me-2"></i>Menunggu Verifikasi Pembayaran</span>
+                <span class="badge bg-warning text-dark" th:text="${#lists.size(setoranList)} + ' menunggu'">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Kategori</th>
+                                <th>Berat (kg)</th>
+                                <th>Total Harga</th>
+                                <th>Alamat Jemput</th>
+                                <th>Bukti Pembayaran</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${setoranList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${s.warga.nama}">Budi</td>
+                                <td th:text="${s.kategori != null ? s.kategori.nama : '-'}">ORGANIK</td>
+                                <td th:text="${s.beratKg}">5.0</td>
+                                                <td class="fw-semibold" th:text="'Rp ' + ${s.totalHarga}">Rp 10.000</td>
+                                <td style="max-width:150px; white-space:pre-wrap; font-size:0.85rem;"
+                                    th:text="${s.alamatJemput != null ? s.alamatJemput : '-'}">Alamat</td>
+                                <td>
+                                    <div th:if="${s.buktiPembayaran != null}" style="min-width:130px;">
+                                        <a th:href="@{'/files/bukti_pembayaran/' + ${s.buktiPembayaran}}"
+                                           onclick="event.preventDefault(); previewImage(this.href);"
+                                           class="d-inline-block position-relative">
+                                            <img th:src="@{'/files/bukti_pembayaran/' + ${s.buktiPembayaran}}"
+                                                 alt="Bukti" class="img-thumbnail"
+                                                 style="width:120px; height:90px; object-fit:cover; border:2px solid #dee2e6;">
+                                            <span class="position-absolute bottom-0 start-50 translate-middle-x badge bg-dark bg-opacity-75 small px-2 mb-1"
+                                                  style="font-size:0.7rem; white-space:nowrap;">
+                                                <i class="fas fa-search-plus me-1"></i>Perbesar
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <span th:if="${s.buktiPembayaran == null}" class="text-muted">-</span>
+                                </td>
+                                <td th:text="${#temporals.format(s.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                                <td>
+                                    <form th:action="@{/petugas/verifikasi/pembayaran/{id}(id=${s.id})}" method="post" style="display:inline;">
+                                        <input type="hidden" name="statusPembayaran" value="DISETUJUI">
+                                        <button type="submit" class="btn btn-sm btn-success mb-1 w-100 btn-confirm-action"
+                                                data-confirm="Setujui pembayaran ini dan jadwalkan penjemputan?">
+                                            <i class="fas fa-check me-1"></i>ACC & Jemput
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/petugas/verifikasi/pembayaran/{id}(id=${s.id})}" method="post" style="display:inline;">
+                                        <input type="hidden" name="statusPembayaran" value="DITOLAK">
+                                        <button type="submit" class="btn btn-sm btn-danger w-100 btn-confirm-action"
+                                                data-confirm="Tolak pembayaran ini?">
+                                            <i class="fas fa-times me-1"></i>Tolak
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${setoranList == null or #lists.isEmpty(setoranList)}">
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
+                                    Tidak ada pembayaran yang menunggu verifikasi
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL 3: Penjemputan Aktif -->
+        <div class="card">
+            <div class="card-header bg-soft-primary d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-truck me-2"></i>Penjemputan Aktif</span>
+                <span class="badge bg-primary" th:text="${#lists.size(penjemputanList)} + ' aktif'">0</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Kategori</th>
+                                <th>Berat (kg)</th>
+                                <th>Total Harga</th>
+                                <th>Alamat Jemput</th>
+                                <th>Status Pembayaran</th>
+                                <th>Status Penjemputan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${penjemputanList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${s.warga.nama}">Budi</td>
+                                <td th:text="${s.kategori != null ? s.kategori.nama : '-'}">ORGANIK</td>
+                                <td th:text="${s.beratKg}">5.0</td>
+                                <td class="fw-semibold" th:text="'Rp ' + ${s.totalHarga}">Rp 10.000</td>
+                                <td style="max-width:150px; white-space:pre-wrap; font-size:0.85rem;"
+                                    th:text="${s.alamatJemput != null ? s.alamatJemput : '-'}">Alamat</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.statusPembayaran?.name() == 'DISETUJUI'} ? 'bg-success' : (${s.statusPembayaran?.name() == 'MENUNGGU_VERIFIKASI'} ? 'bg-warning' : 'bg-danger')"
+                                          th:text="${s.statusPembayaran?.name()}">DISETUJUI</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${s.statusPenjemputan?.name() == 'SELESAI'} ? 'bg-success' : (${s.statusPenjemputan?.name() == 'SEDANG_DIJEMPUT'} ? 'bg-info' : 'bg-secondary')"
+                                          th:text="${s.statusPenjemputan?.name()}">DIJADWALKAN</span>
+                                </td>
+                                <td>
+                                    <form th:if="${s.statusPenjemputan?.name() == 'DIJADWALKAN' or s.statusPenjemputan?.name() == 'SEDANG_DIJEMPUT'}"
+                                          th:action="@{/petugas/verifikasi/penjemputan/{id}(id=${s.id})}" method="post" style="display:inline;">
+                                        <input type="hidden" name="statusPenjemputan"
+                                               th:value="${s.statusPenjemputan?.name() == 'DIJADWALKAN'} ? 'SEDANG_DIJEMPUT' : 'SELESAI'">
+                                        <button type="submit" class="btn btn-sm"
+                                                th:classappend="${s.statusPenjemputan?.name() == 'DIJADWALKAN'} ? 'btn-info' : 'btn-success'">
+                                            <i th:classappend="${s.statusPenjemputan?.name() == 'DIJADWALKAN'} ? 'fa-play' : 'fa-check'"
+                                               class="fas me-1"></i>
+                                            <th:block th:if="${s.statusPenjemputan?.name() == 'DIJADWALKAN'}">Jemput Sekarang</th:block>
+                                            <th:block th:if="${s.statusPenjemputan?.name() == 'SEDANG_DIJEMPUT'}">Selesaikan</th:block>
+                                        </button>
+                                    </form>
+                                    <span th:if="${s.statusPenjemputan?.name() == 'SELESAI'}" class="text-success fw-semibold">
+                                        <i class="fas fa-check-circle"></i> Selesai
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr th:if="${penjemputanList == null or #lists.isEmpty(penjemputanList)}">
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-truck fa-2x mb-2 d-block"></i>
+                                    Tidak ada penjemputan aktif
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <script>
+        function previewImage(url) {
+            document.getElementById('previewImage').src = url;
+            var modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            modal.show();
+        }
+    </script>
+    </div>
+</body>
+</html>

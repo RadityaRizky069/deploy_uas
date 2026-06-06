@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Data Warga</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Data Warga</h4>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="form-control table-search" placeholder="Cari warga...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="wargaTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Username</th>
+                                <th>Alamat</th>
+                                <th>No Telepon</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="w, stat : ${wargaList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${w.nama}">Budi</td>
+                                <td th:text="${w.username}">budi</td>
+                                <td th:text="${w.alamat}">Jl. Contoh No. 1</td>
+                                <td th:text="${w.noTelepon}">08123456789</td>
+                            </tr>
+                            <tr th:if="${wargaList == null or #lists.isEmpty(wargaList)}">
+                                <td colspan="5" class="text-center text-muted py-4">Belum ada data warga</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

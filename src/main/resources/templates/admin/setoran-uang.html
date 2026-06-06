@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Data Setoran Uang</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Data Setoran Uang</h4>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="form-control table-search" placeholder="Cari setoran uang...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Warga</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                                <th>Deskripsi</th>
+                                <th>Petugas</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="su, stat : ${setoranUangList}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${su.warga.nama}">Budi</td>
+                                <td th:text="${su.jenisUang}">Donasi</td>
+                                <td th:text="${su.jumlahUang}">Rp 50.000</td>
+                                <td th:text="${su.deskripsi}">Pembayaran sampah</td>
+                                <td th:text="${su.petugas != null ? su.petugas.nama : '-'}">Petugas</td>
+                                <td th:text="${#temporals.format(su.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                            </tr>
+                            <tr th:if="${setoranUangList == null or #lists.isEmpty(setoranUangList)}">
+                                <td colspan="7" class="text-center text-muted py-4">Belum ada data setoran uang</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

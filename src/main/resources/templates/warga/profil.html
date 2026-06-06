@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+<head>
+    <title>Profil Saya</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h4 class="page-title">Profil Saya</h4>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Informasi Akun</div>
+                    <div class="card-body">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <td class="fw-bold text-muted" style="width: 150px;">Nama</td>
+                                <td th:text="${user.nama}">Budi</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Username</td>
+                                <td th:text="${user.username}">budi</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Role</td>
+                                <td><span class="badge bg-success" th:text="${user.role}">WARGA</span></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Alamat</td>
+                                <td th:text="${user.alamat}">Jl. Contoh No. 1</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">No Telepon</td>
+                                <td th:text="${user.noTelepon}">08123456789</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-muted">Terdaftar Sejak</td>
+                                <td th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy')}">2024-01-01</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">Ubah Password</div>
+                    <div class="card-body">
+                        <form th:action="@{/warga/profil/ganti-password}" method="post">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Password Saat Ini</label>
+                                <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Password Baru</label>
+                                <input type="password" id="newPassword" name="newPassword" class="form-control" required minlength="6">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Konfirmasi Password Baru</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required minlength="6">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key me-2"></i>Ubah Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Edit Profil</div>
+                    <div class="card-body">
+                        <form th:action="@{/warga/profil/update}" method="post">
+                            <div class="mb-3">
+                                <label for="editNama" class="form-label">Nama</label>
+                                <input type="text" id="editNama" name="nama" class="form-control" th:value="${user.nama}" required minlength="3">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editAlamat" class="form-label">Alamat</label>
+                                <textarea id="editAlamat" name="alamat" class="form-control" th:text="${user.alamat}" placeholder="Masukkan alamat"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTelepon" class="form-label">No Telepon</label>
+                                <input type="text" id="editTelepon" name="noTelepon" class="form-control" th:value="${user.noTelepon}" placeholder="Masukkan no telepon">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Simpan Perubahan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
